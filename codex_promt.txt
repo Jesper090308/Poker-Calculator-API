@@ -1,0 +1,26 @@
+Here are the most impactful improvements roughly in order of value:
+
+**Equity Estimation**
+- **Improved range weighting** — right now opponent ranges are static profiles. Updating them based on betting history across streets would be more realistic.
+- **Street-aware sampling** — weight runouts by card removal effects (e.g. if you hold Ah, the flush completing on the river is less likely).
+- **Equity buckets** — instead of recalculating equity from scratch every request, precompute equity for common hand/board combinations and cache them.
+
+**Decision Making**
+- **SPR awareness** (Stack-to-Pot Ratio) — the optimal strategy changes dramatically based on SPR. A 2x SPR spot plays very differently from a 10x SPR spot and your scorer doesn't account for this explicitly.
+- **Nut advantage** — track who has more strong hands on a given board texture and adjust aggression accordingly.
+- **Multi-street planning** — right now decisions are made one street at a time. Knowing "if I bet flop, what's my plan for turn/river?" produces better sizing.
+
+**Opponent Modelling**
+- **Bet sizing tells** — opponents who always bet small have air, large means value. Use bet sizing as an additional signal beyond just action type.
+- **Dynamic profile updating** — start with a prior (unknown) and shift toward tighter/looser based on observed actions within the session.
+
+**Performance**
+- **LRU cache for equity lookups** — same hand + board + profile shouldn't be recomputed.
+- **Early termination** — if equity is extremely high (>85%) or low (<15%), stop simulating early and just jam or fold.
+
+I want all of these to be added to the bot for furter upgrades. That means we are also adding these things in the UI:
+- Starting new games. when you start up the engine, it will create a database for the game where the bot stores all previous game data so that it can use it for later. we need to be able to reset this
+- we need to be able to enter how many villains there are. there isnt just one, there will be multiple (for example, 4 other players.)
+- making it easier to enter the values. Values that need to be changed a lot need to be quickly changable. (e.g. previous bet, previous action and villains left.)
+
+eventually I want to automate the bot to self play my friends so maybe also start with an adapter for card recognition on screen en number reading on screen. this is a last improvement that comes after all the rest is set up.

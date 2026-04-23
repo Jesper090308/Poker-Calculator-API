@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokerbot Workbench</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20260422c" />
+  </head>
+  <body
+    data-current-game-id="{{ game_state.current_game.game_id }}"
+    data-current-villain-count="{{ game_state.current_game.villain_count }}"
+  >
+    <div class="backdrop"></div>
+
+    <header class="hero">
+      <div class="hero-ribbon">
+        <div class="ribbon-chip">
+          <span class="ribbon-label">Runtime</span>
+          <p class="status-pill {{ 'available' if openspiel_available else 'blocked' }}">
+            {% if openspiel_available %}OpenSpiel detected{% else %}OpenSpiel not detected{% endif %}
+          </p>
+          <span class="ribbon-copy">Solver: {{ runtime_profile["algorithm"] }}</span>
+          <span class="ribbon-copy">Budget: {{ runtime_profile["time_budget_seconds"] }}s</span>
+        </div>
+
+        <div class="ribbon-chip">
+          <span class="ribbon-label">Current Game</span>
+          <span class="status-pill available">Database live</span>
+          <span id="game-summary-line" class="ribbon-copy">
+            {{ game_state.current_game.label }} with {{ game_state.current_game.villain_count }} villain seats.
+          </span>
+          <span id="game-id-line" class="ribbon-copy">Game ID: {{ game_state.current_game.game_id }}</span>
+          <span id="game-decisions-line" class="ribbon-copy">Decisions: {{ game_state.current_game.decisions_recorded }}</span>
+          <span id="game-observations-line" class="ribbon-copy">Observations: {{ game_state.current_game.hands_recorded }}</span>
+        </div>
+      </div>
+
+      <div class="hero-copy">
+        <p class="eyebrow">Session-Aware Poker Lab</p>
+        <h1>Pokerbot Workbench</h1>
+        <p class="lede">
+          Run faster decisions with cached multi-villain equity, live villain tracking,
+          stack-to-pot awareness, and a persistent game database that keeps session reads
+          for later upgrades.
+        </p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Game Control</h2>
+            <p class="small-copy">Create a new session or reset cleanly without losing prior archived games.</p>
+          </div>
+          <button id="demo-button" type="button" class="ghost-button">Load demo spot</button>
+        </div>
+
+        <div class="toolbar-grid">
+          <div class="field-group">
+            <label for="game-label">Game Label</label>
+            <input type="text" id="game-label" placeholder="Friday Home Game" />
+          </div>
+
+          <div class="field-group compact-group">
+            <label for="villain-count">Villains</label>
+            <div class="stepper">
+              <button type="button" class="step-button" data-target="villain-count" data-step="-1">-</button>
+              <input type="number" id="villain-count" min="1" max="8" step="1" value="{{ game_state.current_game.villain_count }}" />
+              <button type="button" class="step-button" data-target="villain-count" data-step="1">+</button>
+            </div>
+          </div>
+
+          <div class="toolbar-actions">
+            <button id="sync-villains-button" type="button" class="ghost-button">Sync villains</button>
+            <button id="new-game-button" type="button" class="primary-button">Start new game</button>
+            <button id="reset-game-button" type="button" class="ghost-button">Reset current</button>
+          </div>
+        </div>
+
+        <form id="decision-form">
+          <input type="hidden" id="game-id" value="{{ game_state.current_game.game_id }}" />
+
+          <div class="section-head">
+            <h2>Quick State</h2>
+            <p class="small-copy">These are the fields you will likely touch every hand.</p>
+          </div>
+
+          <div class="quick-grid">
+            <div class="field-group">
+              <label>Hero Cards</label>
+              <div class="card-row">
+                <input type="text" id="hero-1" placeholder="Ah" maxlength="3" required />
+                <input type="text" id="hero-2" placeholder="Kd" maxlength="3" required />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label>Board</label>
+              <div class="card-row board-row">
+                <input type="text" id="board-1" placeholder="Qs" maxlength="3" />
+                <input type="text" id="board-2" placeholder="Jh" maxlength="3" />
+                <input type="text" id="board-3" placeholder="9h" maxlength="3" />
+                <input type="text" id="board-4" placeholder="2c" maxlength="3" />
+                <input type="text" id="board-5" placeholder="blank" maxlength="3" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="pot-size">Pot Size</label>
+              <div class="stepper">
+                <button type="button" class="step-button" data-target="pot-size" data-step="-1" data-unit="bb">-1bb</button>
+                <input type="number" id="pot-size" min="0" step="0.5" value="18" required />
+                <button type="button" class="step-button" data-target="pot-size" data-step="1" data-unit="bb">+1bb</button>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="to-call">Amount To Call</label>
+              <div class="stepper">
+                <button type="button" class="step-button" data-target="to-call" data-step="-1" data-unit="bb">-1bb</button>
+                <input type="number" id="to-call" min="0" step="0.5" value="6" required />
+                <button type="button" class="step-button" data-target="to-call" data-step="1" data-unit="bb">+1bb</button>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="hero-stack">Hero Stack</label>
+              <div class="stepper">
+                <button type="button" class="step-button" data-target="hero-stack" data-step="-5" data-unit="bb">-5bb</button>
+                <input type="number" id="hero-stack" min="0" step="0.5" value="84" required />
+                <button type="button" class="step-button" data-target="hero-stack" data-step="5" data-unit="bb">+5bb</button>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="big-blind">Big Blind</label>
+              <div class="stepper">
+                <button type="button" class="step-button" data-target="big-blind" data-step="-0.5">-</button>
+                <input type="number" id="big-blind" min="0.1" step="0.1" value="2" required />
+                <button type="button" class="step-button" data-target="big-blind" data-step="0.5">+</button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="section-head villains-head">
+            <div>
+              <h2>Villains</h2>
+              <p class="small-copy">Pick who is still in the hand, who is driving the action, and the latest size.</p>
+            </div>
+            <span class="small-copy" id="villain-summary">1 active villain</span>
+          </div>
+
+          <div id="villains-shell" class="villain-grid"></div>
+
+          <div class="field-group">
+            <label for="notes">Table Notes</label>
+            <textarea
+              id="notes"
+              rows="3"
+              placeholder="Example: Seat 2 likes tiny flop probes with air, seat 4 overfolds to turn pressure."
+            ></textarea>
+          </div>
+
+          <details class="advanced-box solver-settings">
+            <summary>Solver Settings</summary>
+            <div class="solver-grid">
+              <div class="field-group">
+                <label for="backend">Backend</label>
+                <select id="backend">
+                  <option value="auto">Auto</option>
+                  <option value="heuristic" selected>Heuristic</option>
+                  <option value="open_spiel">OpenSpiel</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="max-seconds">Compute Time</label>
+                <div class="stepper">
+                  <button type="button" class="step-button" data-target="max-seconds" data-step="-1">-</button>
+                  <input type="number" id="max-seconds" min="1" max="55" step="1" value="8" required />
+                  <button type="button" class="step-button" data-target="max-seconds" data-step="1">+</button>
+                </div>
+              </div>
+            </div>
+          </details>
+        </form>
+      </section>
+
+      <section class="panel result-panel">
+        <div class="panel-head">
+          <h2>Decision Output</h2>
+          <span class="small-copy" id="status-line">Waiting for input.</span>
+        </div>
+
+        <div class="result-actions">
+          <button
+            id="submit-button"
+            type="button"
+            class="primary-button top-run-button"
+            onclick="(function(){ const form = document.getElementById('decision-form'); if (!form) { return; } if (form.requestSubmit) { form.requestSubmit(); return; } form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); })()"
+          >
+            Run Decision
+          </button>
+        </div>
+
+        <div id="result-shell" class="result-shell empty">
+          <div class="result-summary">
+            <p class="empty-copy">
+              Recommendations, villain reads, and cached-equity signals will appear here.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/app.js?v=20260422c"></script>
+  </body>
+</html>

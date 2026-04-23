@@ -1,0 +1,17 @@
+__pycache__/
+.pytest_cache/
+.coverage
+.mypy_cache/
+.ruff_cache/
+.venv/
+.python_packages/
+.tmp-tests/
+.vs/
+venv/
+build/
+dist/
+*.spec
+*.pyc
+*.pyo
+*.db
+data/*.db
