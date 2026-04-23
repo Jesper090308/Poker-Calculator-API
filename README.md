@@ -28,7 +28,7 @@ A heads-up poker decision engine with a local web UI, session tracking, and opti
 ```
 ## Then open:
 
-http://127.0.0.1:8000 or localhost:8000
+`http://127.0.0.1:8000` or `localhost:8000`
 
 ### Option 2: Direct Python (development)
 ```bash
@@ -36,7 +36,7 @@ C:\Users\<your-user>\.cache\codex-runtimes\codex-primary-runtime\dependencies\py
 ```
 ## Development Mode
 
-run_server.py runs with auto-reload enabled for fast iteration.
+`run_server.py` runs with auto-reload enabled for fast iteration.
 
 ## Build Windows Executable
 
@@ -49,7 +49,7 @@ After building, the output will be:
 dist\Pokerbot.exe
 ```
 What the executable does:
-Starts local server at http://127.0.0.1:8000
+Starts local server at `http://127.0.0.1:8000`
 Opens the UI in your default browser
 Runs until the window is closed
 
@@ -58,6 +58,6 @@ Runs until the window is closed
 This project includes:
 
 CI pipeline: runs tests on every push / pull request
-Windows build pipeline: generates Pokerbot.exe automatically
+Windows build pipeline: generates `Pokerbot.exe` automatically
 
 You can manually run builds from the GitHub Actions tab and download the artifact.
