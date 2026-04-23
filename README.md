@@ -30,7 +30,7 @@ A heads-up poker decision engine with a local web UI, session tracking, and opti
 
 `http://127.0.0.1:8000` or `localhost:8000`
 
-### Option 2: Direct Python (development)
+### Option 2: Direct Python (also works with openspiel)
 ```bash
 C:\Users\<your-user>\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe .\run_server.py
 ```
@@ -38,7 +38,7 @@ C:\Users\<your-user>\.cache\codex-runtimes\codex-primary-runtime\dependencies\py
 
 `run_server.py` runs with auto-reload enabled for fast iteration.
 
-## Build Windows Executable
+## Option 3: Build Windows Executable
 
 Create a standalone .exe:
 ```bash
@@ -53,6 +53,7 @@ Starts local server at `http://127.0.0.1:8000`
 Opens the UI in your default browser
 Runs until the window is closed
 
+IMPORTANT: the Openspiel AI does not work with the .exe because it uses WSL to run which is not part of the executable. To use Openspiel you have to run the script itself (option 2) with WSL or a linux environment
 ## GitHub Actions
 
 This project includes:
